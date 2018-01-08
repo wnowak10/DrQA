@@ -76,7 +76,7 @@ DrQA = pipeline.DrQA(
 # ------------------------------------------------------------------------------
 
 
-def process(question, dox, candidates=None, top_n=3, n_docs=5):
+def process(question, dox, candidates=None, top_n=5, n_docs=5):
     predictions = DrQA.process(
         question, dox, candidates, top_n, n_docs, return_context=False #turn to true for context (highlighted...)
     )
