@@ -15,7 +15,8 @@ def drqa():
     respondent_id = request.args.get(id, default = 7606, type = int)
     query = request.args.get('query', default = "Why do you love Molly?", type = str)    
 # Call drqa/scripts/pipeline/interactive which calls drqa/pipeline/drqa.py
-    output = process(query, dox = "https://molly.com/q?q=how%20should%20we%20decide%20which%20features%20to%20build?&id=7606")
+	doc_url = "https://molly.com/q?q=how%20should%20we%20decide%20which%20features%20to%20build?&id="+respondent_id
+    output = process(query, dox = doc_url)
 #    output = process(req_data['query'], dox = "https://molly.com/q?q=how%20should%20we%20decide%20which%20features%20to%20build?&id=7606")
     return jsonify(output)
 
