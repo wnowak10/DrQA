@@ -366,15 +366,31 @@ class DrQA(object):
             molly_data = json.loads(url.read().decode())
             # print(molly_data)
 
+        # molly_texts = []
+        # molly_ids = []
+        # id_dict= {}
+        # for i, post in enumerate(molly_data['blog']):
+        #     # molly_ids.append(i)
+        #     molly_ids.append(i)
+        #     id_dict[i] = str(molly_data['blog'][i]['id'])
+        #     molly_texts.append(post.get('content'))
         molly_texts = []
         molly_ids = []
-        id_dict= {}
-        for i, post in enumerate(molly_data['blog']):
-            # molly_ids.append(i)
-            molly_ids.append(i)
-            id_dict[i] = str(molly_data['blog'][i]['id'])
-            molly_texts.append(post.get('content'))
-
+        ids_list = []
+        for data_source in molly_data:
+            if data_source == 'blog':
+                for i, post in enumerate(molly_data[data_source], start = 0):
+                    molly_texts.append(post.get('content'))
+                    # molly_ids.append(post['id'])
+                    ids_list.append(str(molly_data[data_source][i]['id']))
+            elif data_source == 'answer':
+                for j, response in enumerate(molly_data[data_source]):
+                    molly_texts.append(response.get('comments'))
+                    ids_list.append(str(molly_data[data_source][j]['id']))
+            elif data_source == 'twitter':
+                for k, tweet in enumerate(molly_data[data_source]):
+                    molly_texts.append(tweet.get('text'))
+                    ids_list.append(str(molly_data[data_source][k]['id']))
 
 
 
@@ -469,9 +485,10 @@ class DrQA(object):
                 new_score, (new_qidx, new_rel_didx, new_sidx), new_s, new_e = heapq.heappop(queue)
                 # print('new_rel_didx')
                 # print('\n\n\n')
-                # print(new_rel_didx)
+                print(new_rel_didx)
                 new_prediction = {
-                    'doc_id': id_dict[new_rel_didx], #[new_rel_didx],
+                    # 'doc_id': id_dict[new_rel_didx], #[new_rel_didx],
+                    'doc_id': ids_list[new_rel_didx], #[new_rel_didx],
                     'span': molly_tokens[new_sidx].slice(new_s, new_e + 1).untokenize(),
                     # 'doc_score': float(new_all_doc_scores[qidx][rel_didx]),
                     'span_score': float(new_score),
@@ -479,7 +496,8 @@ class DrQA(object):
                 }
                 for i, dictt in enumerate(molly_data['blog']): # for every blog post as dictionary
                     did = dictt['id'] # did is the id of the dictionary
-                    if did == id_dict[new_rel_didx]:
+                    # if did == id_dict[new_rel_didx]:
+                    if did == ids_list[new_rel_didx]:
                         molly_data['blog'][i]['span'] = molly_tokens[new_sidx].slice(new_s, new_e + 1).untokenize()
                         molly_data['blog'][i]['span_score'] = float(new_score)
 
