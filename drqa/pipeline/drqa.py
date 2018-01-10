@@ -445,12 +445,19 @@ class DrQA(object):
         final_ids = []
         new_queues = [[] for _ in range(len(queries))]
         for new_result, new_ex_ids, new_batch_size in new_result_handles:
+            print('new_result')
+            print(new_result)
             new_s, new_e, new_score = new_result.get()
+            print(new_s)
+            print('new_score')
+            print(new_score)
             for i in range(new_batch_size):
                 # We take the top prediction per split.
                 if len(new_score[i]) > 0:
                     item = (new_score[i][0], new_ex_ids[i], new_s[i][0], new_e[i][0])
                     queue = new_queues[new_ex_ids[i][0]]
+                    print(queue)
+                    print(item)
                     if len(queue) < top_n:
                         # print(list(list(item)[1])[1]) # printing out doc ids
                         # print(list(new_ex_ids[i])[1])
@@ -499,6 +506,6 @@ class DrQA(object):
                     (len(queries), time.time() - t0))
 
 
-        return molly_data
-
+        # return molly_data
+        return new_all_predictions
 
