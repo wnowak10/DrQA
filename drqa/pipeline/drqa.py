@@ -177,22 +177,23 @@ class DrQA(object):
         )
         return loader
 
-    def process(self, 
-                    query, 
-                    dox, 
-                    candidates=None, 
-                    top_n=5, 
-                    n_docs=5,
-                    return_context=False):
-        """Run a single query."""
-        predictions = self.process_batch(
-            [query], dox, [candidates] if candidates else None,
-            top_n, n_docs, return_context
-        )
-        # return predictions[0]
-        return predictions
+    # def process(self, 
+    #                 query, 
+    #                 dox, 
+    #                 candidates=None, 
+    #                 top_n=5, 
+    #                 n_docs=5,
+    #                 return_context=False):
+    #     """Run a single query."""
+    #     predictions = self.process_batch(
+    #         [query], dox, [candidates] if candidates else None,
+    #         top_n, n_docs, return_context
+    #     )
+    #     # return predictions[0]
+    #     return predictions
 
-    def process_batch(self, 
+    # def process_batch(self, 
+    def process(self,
                         queries, 
                         dox, 
                         candidates=None, 
