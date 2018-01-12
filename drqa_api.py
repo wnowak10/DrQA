@@ -16,28 +16,40 @@ CORS(app)
 # @request_args
 # def drqa(did, query):
 def drqa():
-
-	# print(did)
-	# print(query)
-	did = request.args.get('id' , type = int, default = 7606)
-	# print(str(did))
-	# print(did)
-	# respondent_id = request.form['id'] #.get('id' , type = int) # default = 7606,
-
-	# print(str(resp_id) + 'why?')
-	query = request.form.get('query', default = "How should we decide which features to build?", type = str)  
-	# query, resp_id = request.args.get('query','resp_id')
-	# print(query)  
-	# print(resp_id)
-	# Call drqa/scripts/pipeline/interactive which calls drqa/pipeline/drqa.py
-	# idd = str(id)
-	doc_url = "https://molly.com/q?q="+quote(query,safe = '')+"&id="+str(did)
-	# print(request.args)
-	# bar = request.args.get('qid')
-	# all_args = request.args.get('qid', type = str)
-	output = process(query, dox = doc_url)
-	print(doc_url)
+	respondent_id = request.args.get('id', default = 7606, type = int)
+	query = request.args.get('query', default = "Why do you love Molly?", type = str)  
+	print(str(respondent_id))  
+	# urll = "http://molly.com/q?q="+query+"&id="+str(respondent_id)
+	urll = "http://molly.com/q?q="+quote(query,safe = '')+"&id="+str(respondent_id)
+	print(urll)
+	print(type(urll))
+	print(type('hi'))
+	print(query)
+	output = process(query, urll)
 	return jsonify(output)
+# def drqa():
+
+# 	# print(did)
+# 	# print(query)
+# 	did = request.args.get('id' , type = int, default = 7606)
+# 	# print(str(did))
+# 	# print(did)
+# 	# respondent_id = request.form['id'] #.get('id' , type = int) # default = 7606,
+
+# 	# print(str(resp_id) + 'why?')
+# 	query = request.form.get('query', default = "How should we decide which features to build?", type = str)  
+# 	# query, resp_id = request.args.get('query','resp_id')
+# 	# print(query)  
+# 	# print(resp_id)
+# 	# Call drqa/scripts/pipeline/interactive which calls drqa/pipeline/drqa.py
+# 	# idd = str(id)
+# 	doc_url = "https://molly.com/q?q="+quote(query,safe = '')+"&id="+str(did)
+# 	# print(request.args)
+# 	# bar = request.args.get('qid')
+# 	# all_args = request.args.get('qid', type = str)
+# 	output = process(query, dox = doc_url)
+# 	print(doc_url)
+# 	return jsonify(output)
 
 if __name__ == '__main__':
 #    app.run(debug=True)
