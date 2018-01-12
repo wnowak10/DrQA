@@ -23,10 +23,12 @@ def drqa():
 	respondent_id = request.args.get('id', default = 7606, type = int)
 	query = request.args.get('query', default = "Why do you love Molly?", type = str)  
 	print(str(respondent_id))  
-	urll = "http://molly.com/q?q="+query+"&id="+str(respondent_id)
+	# urll = "http://molly.com/q?q="+query+"&id="+str(respondent_id)
+	urll = "http://molly.com/q?q="+quote(query,safe = '')+"&id="+str(respondent_id)
 	print(urll)
 	print(type(urll))
 	print(type('hi'))
+	print(query)
 	output = process(query, urll)
 	return jsonify(output)
 
@@ -84,6 +86,7 @@ if __name__ == '__main__':
 	# print(request.args)
 	# bar = request.args.get('qid')
 	# all_args = request.args.get('qid', type = str)
+
 
 	# output = process(query, dox = doc_url)
 	# print(doc_url)
