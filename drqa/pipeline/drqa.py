@@ -469,14 +469,16 @@ class DrQA(object):
                 if len(new_score[i]) > 0:
                     item = (new_score[i][0], new_ex_ids[i], new_s[i][0], new_e[i][0])
                     queue = new_queues[new_ex_ids[i][0]]
-                    if len(queue) < top_n:
-                        # print(list(list(item)[1])[1]) # printing out doc ids
-                        # print(list(new_ex_ids[i])[1])
-                        # print('\n\n\n\n\n')
-                        final_ids.append(list(list(item)[1])[1])
-                        heapq.heappush(queue, item)
-                    else:
-                        heapq.heappushpop(queue, item)
+                    final_ids.append(list(list(item)[1])[1])
+                    heapq.heappush(queue, item)
+                    # if len(queue) < top_n:
+                    #     # print(list(list(item)[1])[1]) # printing out doc ids
+                    #     # print(list(new_ex_ids[i])[1])
+                    #     # print('\n\n\n\n\n')
+                    #     final_ids.append(list(list(item)[1])[1])
+                    #     heapq.heappush(queue, item)
+                    # else:
+                    #     heapq.heappushpop(queue, item)
 
 
 
