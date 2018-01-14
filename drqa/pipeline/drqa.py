@@ -389,7 +389,7 @@ class DrQA(object):
             elif data_source == 'answer':
                 for j, response in enumerate(molly_data[data_source]):
                     molly_texts.append(response.get('comments'))
-                    ids_list.append(str(molly_data[data_source][j]['questionId']))
+                    ids_list.append(molly_data[data_source][j]['questionId'])
             elif data_source == 'twitter':
                 for k, tweet in enumerate(molly_data[data_source]):
                     molly_texts.append(tweet.get('text'))
@@ -470,14 +470,16 @@ class DrQA(object):
                 if len(new_score[i]) > 0:
                     item = (new_score[i][0], new_ex_ids[i], new_s[i][0], new_e[i][0])
                     queue = new_queues[new_ex_ids[i][0]]
-                    if len(queue) < top_n:
-                        # print(list(list(item)[1])[1]) # printing out doc ids
-                        # print(list(new_ex_ids[i])[1])
-                        # print('\n\n\n\n\n')
-                        final_ids.append(list(list(item)[1])[1])
-                        heapq.heappush(queue, item)
-                    else:
-                        heapq.heappushpop(queue, item)
+                    final_ids.append(list(list(item)[1])[1])
+                    heapq.heappush(queue, item)
+                    # if len(queue) < top_n:
+                    #     # print(list(list(item)[1])[1]) # printing out doc ids
+                    #     # print(list(new_ex_ids[i])[1])
+                    #     # print('\n\n\n\n\n')
+                    #     final_ids.append(list(list(item)[1])[1])
+                    #     heapq.heappush(queue, item)
+                    # else:
+                    #     heapq.heappushpop(queue, item)
 
 
 
@@ -512,9 +514,9 @@ class DrQA(object):
                         molly_data['blog'][i]['span_score'] = float(new_score)
 
                 for j, dictt in enumerate(molly_data['answer']): # for every answer
-                    did = dictt['questionId'] # did is the id of the dictionary
+                    did = dictt['questionId'][0] # did is the id of the dictionary
                     # if did == id_dict[new_rel_didx]:
-                    if did == ids_list[new_rel_didx]:
+                    if did == ids_list[new_rel_didx][0]:
                         molly_data['answer'][j]['span'] = molly_tokens[new_sidx].slice(new_s, new_e + 1).untokenize()
                         molly_data['answer'][j]['span_score'] = float(new_score)
 
