@@ -181,7 +181,7 @@ class DrQA(object):
                     query, 
                     dox, 
                     candidates=None, 
-                    top_n=5, 
+                    top_n=2, 
                     n_docs=5,
                     return_context=False):
         """Run a single query."""
@@ -196,13 +196,14 @@ class DrQA(object):
                         queries, 
                         dox, 
                         candidates=None, 
-                        top_n=5, 
+                        top_n=2, 
                         n_docs=5,
                       return_context=False):
         """Run a batch of queries (more efficient)."""
         t0 = time.time()
         logger.info('Processing %d queries...' % len(queries))
-        logger.info('Retrieving top %d docs...' % n_docs)
+        # logger.info('Retrieving top %d docs...' % n_docs)
+        logger.info('Retrieving top %d results...' % top_n)        
 
         ################
         ################
@@ -221,7 +222,6 @@ class DrQA(object):
         ################
         ################
         ################
-
 
 
 
@@ -388,7 +388,8 @@ class DrQA(object):
             elif data_source == 'answer':
                 for j, response in enumerate(molly_data[data_source]):
                     molly_texts.append(response.get('comments'))
-                    ids_list.append(str(molly_data[data_source][j]['questionId']))
+                    # ids_list.append(str(molly_data[data_source][j]['questionId']))
+                    ids_list.append(molly_data[data_source][j]['questionId'])
             elif data_source == 'twitter':
                 for k, tweet in enumerate(molly_data[data_source]):
                     molly_texts.append(tweet.get('text'))
@@ -469,14 +470,18 @@ class DrQA(object):
                 if len(new_score[i]) > 0:
                     item = (new_score[i][0], new_ex_ids[i], new_s[i][0], new_e[i][0])
                     queue = new_queues[new_ex_ids[i][0]]
-                    if len(queue) < top_n:
-                        # print(list(list(item)[1])[1]) # printing out doc ids
-                        # print(list(new_ex_ids[i])[1])
-                        # print('\n\n\n\n\n')
-                        final_ids.append(list(list(item)[1])[1])
-                        heapq.heappush(queue, item)
-                    else:
-                        heapq.heappushpop(queue, item)
+                    # add these and see if we catch em all
+                    final_ids.append(list(list(item)[1])[1])
+                    heapq.heappush(queue, item)
+
+                    # if len(queue) < top_n:
+                    #     # print(list(list(item)[1])[1]) # printing out doc ids
+                    #     # print(list(new_ex_ids[i])[1])
+                    #     # print('\n\n\n\n\n')
+                    #     final_ids.append(list(list(item)[1])[1])
+                    #     heapq.heappush(queue, item)
+                    # else:
+                    #     heapq.heappushpop(queue, item)
 
 
 
@@ -486,10 +491,12 @@ class DrQA(object):
         for queue in new_queues: # newques is list of preds
             new_predictions = []
             while len(queue) > 0:
+                # score, id in our texts, start and end index
                 new_score, (new_qidx, new_rel_didx, new_sidx), new_s, new_e = heapq.heappop(queue)
                 print('new_rel_didx')
                 # print('\n\n\n')
                 print(new_rel_didx)
+                print(ids_list[new_rel_didx])
                 new_prediction = {
                     # 'doc_id': id_dict[new_rel_didx], #[new_rel_didx],
                     'doc_id': ids_list[new_rel_didx], #[new_rel_didx],
@@ -504,23 +511,34 @@ class DrQA(object):
                 for i, dictt in enumerate(molly_data['blog']): # for every blog post as dictionary
                     did = dictt['id'] # did is the id of the dictionary
                     # if did == id_dict[new_rel_didx]:
+                    print('did of {} blog post is {}'.format(i, did))
+                    print('ids_list[new_rel_didx] of first blog post is {}'.format(ids_list[new_rel_didx]))
+                    # print(ids_list[new_rel_didx])
                     if did == ids_list[new_rel_didx]:
-                        print('found match')
+                        print('found blog match')
                         print(did)
                         molly_data['blog'][i]['span'] = molly_tokens[new_sidx].slice(new_s, new_e + 1).untokenize()
                         molly_data['blog'][i]['span_score'] = float(new_score)
 
                 for j, dictt in enumerate(molly_data['answer']): # for every answer
-                    did = dictt['questionId'] # did is the id of the dictionary
+                    did = dictt['questionId'][0] #access number in list # did is the id of the dictionary
                     # if did == id_dict[new_rel_didx]:
-                    if did == ids_list[new_rel_didx]:
+                    print('answer did type is {}'.format(type(did)))
+                    print(' dict qid 0 is {}'.format(dictt['questionId'][0]))
+                    print('dictt[questionId][0] type is'.format(type(int(dictt['questionId'][0]))))
+                    int_id = ids_list[new_rel_didx][0]
+                    if did == int_id:
+                        print('found answer match')
                         molly_data['answer'][j]['span'] = molly_tokens[new_sidx].slice(new_s, new_e + 1).untokenize()
                         molly_data['answer'][j]['span_score'] = float(new_score)
 
                 for k, dictt in enumerate(molly_data['twitter']): # for every blog post as dictionary
                     did = dictt['id'] # did is the id of the dictionary
+                    print(did)
+                    print(dictt['id'])
                     # if did == id_dict[new_rel_didx]:
                     if did == ids_list[new_rel_didx]:
+                        print('found twitter match')
                         molly_data['twitter'][k]['span'] = molly_tokens[new_sidx].slice(new_s, new_e + 1).untokenize()
                         molly_data['twitter'][k]['span_score'] = float(new_score)
 
