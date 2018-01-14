@@ -181,7 +181,7 @@ class DrQA(object):
                     query, 
                     dox, 
                     candidates=None, 
-                    top_n=8, 
+                    top_n=2, 
                     n_docs=5,
                     return_context=False):
         """Run a single query."""
@@ -196,7 +196,7 @@ class DrQA(object):
                         queries, 
                         dox, 
                         candidates=None, 
-                        top_n=8, 
+                        top_n=2, 
                         n_docs=5,
                       return_context=False):
         """Run a batch of queries (more efficient)."""
@@ -222,7 +222,6 @@ class DrQA(object):
         ################
         ################
         ################
-
 
 
 
@@ -471,14 +470,18 @@ class DrQA(object):
                 if len(new_score[i]) > 0:
                     item = (new_score[i][0], new_ex_ids[i], new_s[i][0], new_e[i][0])
                     queue = new_queues[new_ex_ids[i][0]]
-                    if len(queue) < top_n:
-                        # print(list(list(item)[1])[1]) # printing out doc ids
-                        # print(list(new_ex_ids[i])[1])
-                        # print('\n\n\n\n\n')
-                        final_ids.append(list(list(item)[1])[1])
-                        heapq.heappush(queue, item)
-                    else:
-                        heapq.heappushpop(queue, item)
+                    # add these and see if we catch em all
+                    final_ids.append(list(list(item)[1])[1])
+                    heapq.heappush(queue, item)
+
+                    # if len(queue) < top_n:
+                    #     # print(list(list(item)[1])[1]) # printing out doc ids
+                    #     # print(list(new_ex_ids[i])[1])
+                    #     # print('\n\n\n\n\n')
+                    #     final_ids.append(list(list(item)[1])[1])
+                    #     heapq.heappush(queue, item)
+                    # else:
+                    #     heapq.heappushpop(queue, item)
 
 
 
@@ -523,7 +526,7 @@ class DrQA(object):
                     print('answer did type is {}'.format(type(did)))
                     print(' dict qid 0 is {}'.format(dictt['questionId'][0]))
                     print('dictt[questionId][0] type is'.format(type(int(dictt['questionId'][0]))))
-                    int_id = int(ids_list[new_rel_didx][0])
+                    int_id = ids_list[new_rel_didx][0]
                     if did == int_id:
                         print('found answer match')
                         molly_data['answer'][j]['span'] = molly_tokens[new_sidx].slice(new_s, new_e + 1).untokenize()
