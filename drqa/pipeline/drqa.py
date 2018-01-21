@@ -205,25 +205,12 @@ class DrQA(object):
         # logger.info('Retrieving top %d docs...' % n_docs)
         logger.info('Retrieving top %d results...' % top_n)        
 
+      
         ################
         ################
+        # ORIGINAL DRQA CODE
         ################
         ################
-        ################
-        ################
-        ################
-        # ORIGINAL CODE
-        ################
-        ################
-        ################
-        ################
-        ################
-        ################
-        ################
-        ################
-        ################
-
-
 
         # Rank documents for queries.
         # if len(queries) == 1:
@@ -233,17 +220,12 @@ class DrQA(object):
         #         queries, k=n_docs, num_workers=self.num_workers
         #     )
         # all_docids, all_doc_scores = zip(*ranked)
-        # print(all_docids, all_doc_scores)
-
 
         # Flatten document ids and retrieve text from database.
         # We remove duplicates for processing efficiency.
         # flat_docids = list({d for docids in all_docids for d in docids})
         # doc_texts = self.processes.map(fetch_text, flat_docids)
         # did2didx = {did: didx for didx, did in enumerate(flat_docids)}
-        # print("DTEXTSSSSS")
-        # print(doc_texts)
-        # print(len(doc_texts))
 
         # Split and flatten documents. Maintain a mapping from doc (index in
         # flat list) to split (index in flat list).
@@ -256,29 +238,13 @@ class DrQA(object):
         #     for split in splits:
         #         flat_splits.append(split)
         #     didx2sidx[-1][1] = len(flat_splits)
-        #     print(didx2sidx)
-        # print("FLAT SPLITS \n\n\n\n\n")
-        # print(flat_splits[0])
-        # print("didx2sidx {}".format(didx2sidx))
 
-
-
-        # print('s_tokens {}'.format(s_tokens[0].words()))
         # Group into structured example inputs. Examples' ids represent
         # mappings to their question, document, and split ids.
-        # print('all doc ids')
-        # print(all_docids)
         # examples = []
         # for qidx in range(len(queries)):
         #     for rel_didx, did in enumerate(all_docids[qidx]):
-        #         print(rel_didx)
-        #         print(did)
-        #         print(all_docids)
-        #         print('didx2sidx {}'.format(didx2sidx))
-        #         print('did2didx {}'.format(did2didx))
         #         start, end = didx2sidx[did2didx[did]]
-        #         print('start {}'.format(start))
-        #         print('end {}'.format(end))
         #         for sidx in range(start, end):
         #             if (len(q_tokens[qidx].words()) > 0 and
         #                     len(s_tokens[sidx].words()) > 0):
@@ -291,18 +257,13 @@ class DrQA(object):
         #                     'pos': s_tokens[sidx].pos(),
         #                     'ner': s_tokens[sidx].entities(),
         #                 })
-        # print('EXAMPLES \n\n\n\n\n')
-        # # print(examples)
         # logger.info('Reading %d paragraphs...' % len(examples))
-
-        
 
         # Push all examples through the document reader.
         # We decode argmax start/end indices asychronously on CPU.
         # result_handles = []
         # num_loaders = 0
         # # num_loaders = min(self.max_loaders, math.floor(len(examples) / 1e3))
-        # print("num_loaders {}".format(num_loaders))
         # for batch in self._get_loader(examples, num_loaders):
         #     # if candidates or self.fixed_candidates:
         #     #     batch_cands = []
@@ -318,8 +279,6 @@ class DrQA(object):
         #     handle = self.reader.predict(batch, async_pool=self.processes)
         #     result_handles.append((handle, batch[-1], batch[0].size(0)))
 
-
-
         # Iterate through the predictions, and maintain priority queues for
         # top scored answers for each question in the batch.
         # queues = [[] for _ in range(len(queries))]
@@ -334,7 +293,6 @@ class DrQA(object):
         #                 heapq.heappush(queue, item)
         #             else:
         #                 heapq.heappushpop(queue, item)
-
 
         # Arrange final top prediction data.
         # all_predictions = []
@@ -361,21 +319,19 @@ class DrQA(object):
         #             (len(queries), time.time() - t0))
 
 
+        ################
+        ################
+        # MOLLY DRQA CODE
+        ################
+        ################
 
+        # Conect to molly document url.
         with urllib.request.urlopen(dox) as url:
             molly_data = json.loads(url.read().decode())
-            print('initial molly data len')
+            print('Initial molly data # entries:')
             print( len(molly_data['twitter']) + len(molly_data['answer']) + len(molly_data['blog']) )
-            # print(molly_data)
 
-        # molly_texts = []
-        # molly_ids = []
-        # id_dict= {}
-        # for i, post in enumerate(molly_data['blog']):
-        #     # molly_ids.append(i)
-        #     molly_ids.append(i)
-        #     id_dict[i] = str(molly_data['blog'][i]['id'])
-        #     molly_texts.append(post.get('content'))
+        # Collect documents.
         molly_texts = []
         molly_ids = []
         ids_list = []
@@ -388,7 +344,6 @@ class DrQA(object):
             elif data_source == 'answer':
                 for j, response in enumerate(molly_data[data_source]):
                     molly_texts.append(response.get('comments'))
-                    # ids_list.append(str(molly_data[data_source][j]['questionId']))
                     ids_list.append(molly_data[data_source][j]['questionId'])
             elif data_source == 'twitter':
                 for k, tweet in enumerate(molly_data[data_source]):
@@ -396,25 +351,15 @@ class DrQA(object):
                     ids_list.append(str(molly_data[data_source][k]['id']))
 
 
-
-
         # Push through the tokenizers as fast as possible.
         q_tokens = self.processes.map_async(tokenize_text, queries)
-        # s_tokens = self.processes.map_async(tokenize_text, flat_splits)
         q_tokens = q_tokens.get()
-        # s_tokens = s_tokens.get()
-
-
-
         molly_tokens = self.processes.map_async(tokenize_text, molly_texts)
         molly_tokens = molly_tokens.get()
-        # print('molly_tokens \n\n\n\n')
-        # print(molly_tokens)
 
 
         new_examples = []
         for i in range(len(molly_texts)):
-        # for i in molly_ids:
             new_examples.append({
                             'id': (0, i, i),
                             # 'id': (i),
@@ -425,83 +370,36 @@ class DrQA(object):
                             'pos': molly_tokens[i].pos(),
                             'ner': molly_tokens[i].entities(),
                         })
-        # print('new_examples \n\n\n\n')
-        # print(new_examples)
-
-
-
 
         # Push all examples through the document reader.
         # We decode argmax start/end indices asychronously on CPU.
         new_result_handles = []
         new_num_loaders = 0
-        # num_loaders = min(self.max_loaders, math.floor(len(examples) / 1e3))
         print("num_loaders {}".format(new_num_loaders))
         for new_batch in self._get_loader(new_examples, new_num_loaders):
-            # if candidates or self.fixed_candidates:
-            #     batch_cands = []
-            #     for ex_id in batch[-1]:
-            #         batch_cands.append({
-            #             'input': s_tokens[ex_id[2]],
-            #             'cands': candidates[ex_id[0]] if candidates else None
-            # #         })
-            #     handle = self.reader.predict(
-            #         batch, batch_cands, async_pool=self.processes
-            #     )
-            # else:
             new_handle = self.reader.predict(new_batch, async_pool=self.processes)
             new_result_handles.append((new_handle, new_batch[-1], new_batch[0].size(0)))
-            print('new_result_handles')
-            print('\n\n\n')
-            print(new_result_handles)
-
-
-
-
 
         # Iterate through the predictions, and maintain priority queues for
         # top scored answers for each question in the batch.
         final_ids = []
         new_queues = [[] for _ in range(len(queries))]
         for new_result, new_ex_ids, new_batch_size in new_result_handles:
-            print('new_result')
-            print(new_result)
             new_s, new_e, new_score = new_result.get()
-            print(new_s)
-            print('new_score')
-            print(new_score)
             for i in range(new_batch_size):
                 # We take the top prediction per split.
                 if len(new_score[i]) > 0:
                     item = (new_score[i][0], new_ex_ids[i], new_s[i][0], new_e[i][0])
                     queue = new_queues[new_ex_ids[i][0]]
-                    # add these and see if we catch em all
                     final_ids.append(list(list(item)[1])[1])
                     heapq.heappush(queue, item)
 
-                    # if len(queue) < top_n:
-                    #     # print(list(list(item)[1])[1]) # printing out doc ids
-                    #     # print(list(new_ex_ids[i])[1])
-                    #     # print('\n\n\n\n\n')
-                    #     final_ids.append(list(list(item)[1])[1])
-                    #     heapq.heappush(queue, item)
-                    # else:
-                    #     heapq.heappushpop(queue, item)
-
-
-
         new_all_predictions = []
-        print('new queues equal')
-        print(new_queues)
         for queue in new_queues: # newques is list of preds
             new_predictions = []
             while len(queue) > 0:
                 # score, id in our texts, start and end index
                 new_score, (new_qidx, new_rel_didx, new_sidx), new_s, new_e = heapq.heappop(queue)
-                print('new_rel_didx')
-                # print('\n\n\n')
-                print(new_rel_didx)
-                print(ids_list[new_rel_didx])
                 new_prediction = {
                     # 'doc_id': id_dict[new_rel_didx], #[new_rel_didx],
                     'doc_id': ids_list[new_rel_didx], #[new_rel_didx],
@@ -510,60 +408,32 @@ class DrQA(object):
                     'span_score': float(new_score),
                     'content' : molly_texts[new_rel_didx]
                 }
-                # print(ids_list)
-                # print(len(ids_list))
-                # print('is len of ids_list')
                 for i, dictt in enumerate(molly_data['blog']): # for every blog post as dictionary
                     did = dictt['id'] # did is the id of the dictionary
-                    # if did == id_dict[new_rel_didx]:
-                    print('did of {} blog post is {}'.format(i, did))
-                    print('ids_list[new_rel_didx] of first blog post is {}'.format(ids_list[new_rel_didx]))
-                    # print(ids_list[new_rel_didx])
                     if did == ids_list[new_rel_didx]:
-                        print('found blog match')
-                        print(did)
                         molly_data['blog'][i]['span'] = molly_tokens[new_sidx].slice(new_s, new_e + 1).untokenize()
                         molly_data['blog'][i]['span_score'] = float(new_score)
 
                 for j, dictt in enumerate(molly_data['answer']): # for every answer
-                    did = dictt['questionId'][0] #access number in list # did is the id of the dictionary
-                    # if did == id_dict[new_rel_didx]:
-                    print('answer did type is {}'.format(type(did)))
-                    print(' dict qid 0 is {}'.format(dictt['questionId'][0]))
-                    print('dictt[questionId][0] type is'.format(type(int(dictt['questionId'][0]))))
-                    int_id = ids_list[new_rel_didx][0]
-                    if did == int_id:
-                        print('found answer match')
+                    did = dictt['questionId'][0] # did is the id of the dictionary
+                    if did == ids_list[new_rel_didx][0]:
                         molly_data['answer'][j]['span'] = molly_tokens[new_sidx].slice(new_s, new_e + 1).untokenize()
                         molly_data['answer'][j]['span_score'] = float(new_score)
-
                 for k, dictt in enumerate(molly_data['twitter']): # for every blog post as dictionary
                     did = dictt['id'] # did is the id of the dictionary
-                    print(did)
-                    print(dictt['id'])
-                    # if did == id_dict[new_rel_didx]:
                     if did == ids_list[new_rel_didx]:
-                        print('found twitter match')
                         molly_data['twitter'][k]['span'] = molly_tokens[new_sidx].slice(new_s, new_e + 1).untokenize()
                         molly_data['twitter'][k]['span_score'] = float(new_score)
 
-                # if return_context:
-                #     new_prediction['context'] = {
-                #         'text': molly_tokens[new_sidx].untokenize(),
-                #         'start': molly_tokens[new_sidx].offsets()[new_s][0],
-                #         'end': molly_tokens[new_sidx].offsets()[new_e][1],
-                #     }
                 new_predictions.append(new_prediction)
-                # print(new_predictions)
-                # print('new_predictions')
-                # print('\n\n\n')
             new_all_predictions.append(new_predictions[-1::-1])
 
         logger.info('Processed %d queries in %.4f (s)' %
                     (len(queries), time.time() - t0))
 
-        print('final molly data len')
+        print('Final molly data entries:')
         print( len(molly_data['twitter']) + len(molly_data['answer']) + len(molly_data['blog']) )
+
         return molly_data
 
 
