@@ -254,7 +254,7 @@ class DocReader(object):
     # Prediction
     # --------------------------------------------------------------------------
 
-    def predict(self, ex, candidates=None, top_n=1, async_pool=None):
+    def predict(self, ex, candidates=None, top_n=10, async_pool=None):
         """Forward a batch of examples only to get predictions.
 
         Args:
